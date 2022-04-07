@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "NoiseMaker": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
