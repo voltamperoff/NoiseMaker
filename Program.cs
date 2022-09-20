@@ -3,8 +3,25 @@ using System.Net.Sockets;
 
 class Program
 {
-    private static readonly Random random = new();
-    private static readonly object locker = new();
+    private static readonly Random random;
+    private static readonly object locker;
+    private static readonly HttpClientHandler handler;
+    private static readonly TimeSpan timeout;
+
+    static Program()
+    {
+        random = new();
+
+        locker = new();
+
+        handler = new HttpClientHandler
+        {
+            ClientCertificateOptions = ClientCertificateOption.Manual,
+            ServerCertificateCustomValidationCallback = (message, cert, chain, policy) => true
+        };
+
+        timeout = TimeSpan.FromSeconds(5);
+    }
 
     private static IPAddress GetRandomPublicIPAddress()
     {
@@ -50,15 +67,9 @@ class Program
     private static async Task ConnectAsync(IPAddress address)
     {
         // Ignore self-signed certificates
-        var handler = new HttpClientHandler
-        {
-            ClientCertificateOptions = ClientCertificateOption.Manual,
-            ServerCertificateCustomValidationCallback = (message, cert, chain, policy) => true
-        };
-
         using var client = new HttpClient(handler);
 
-        client.Timeout = TimeSpan.FromSeconds(5);
+        client.Timeout = timeout;
 
         try
         {
