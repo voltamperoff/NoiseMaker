@@ -3,24 +3,18 @@ using System.Net.Sockets;
 
 class Program
 {
-    private static readonly Random random;
-    private static readonly object locker;
+    private static readonly Random random = new();
+    private static readonly object locker = new();
     private static readonly HttpClientHandler handler;
-    private static readonly TimeSpan timeout;
+    private static readonly TimeSpan timeout = TimeSpan.FromSeconds(5);
 
     static Program()
     {
-        random = new();
-
-        locker = new();
-
         handler = new HttpClientHandler
         {
             ClientCertificateOptions = ClientCertificateOption.Manual,
             ServerCertificateCustomValidationCallback = (message, cert, chain, policy) => true
         };
-
-        timeout = TimeSpan.FromSeconds(5);
     }
 
     private static IPAddress GetRandomPublicIPAddress()
