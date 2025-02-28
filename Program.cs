@@ -4,7 +4,6 @@ using System.Net.Sockets;
 class Program
 {
     private static readonly Random random = new();
-    private static readonly object locker = new();
     private static readonly HttpClientHandler handler;
     private static readonly TimeSpan timeout = TimeSpan.FromSeconds(5);
 
@@ -19,43 +18,40 @@ class Program
 
     private static IPAddress GetRandomPublicIPAddress()
     {
-        lock (locker)
+        byte[] b = new byte[4];
+
+        while (true)
         {
-            byte[] b = new byte[4];
+            random.NextBytes(b);
 
-            while (true)
-            {
-                random.NextBytes(b);
+            if (b[0] == 0 || b[0] == 10 || b[0] == 127 || b[0] >= 240) continue;
 
-                if (b[0] == 0 || b[0] == 10 || b[0] == 127 || b[0] >= 240) continue;
+            if (b[0] == 100 && b[1] >= 64 && b[1] <= 127) continue;
 
-                if (b[0] == 100 && b[1] >= 64 && b[1] <= 127) continue;
+            if (b[0] == 169 && b[1] == 254) continue;
 
-                if (b[0] == 169 && b[1] == 254) continue;
+            if (b[0] == 172 && b[1] >= 16 && b[1] <= 31) continue;
 
-                if (b[0] == 172 && b[1] >= 16 && b[1] <= 31) continue;
+            if (b[0] == 192 && b[1] == 0 && (b[2] == 0 || b[2] == 2)) continue;
 
-                if (b[0] == 192 && b[1] == 0 && (b[2] == 0 || b[2] == 2)) continue;
+            if (b[0] == 192 && b[1] == 88 && b[2] == 99) continue;
 
-                if (b[0] == 192 && b[1] == 88 && b[2] == 99) continue;
+            if (b[0] == 192 && b[1] == 168) continue;
 
-                if (b[0] == 192 && b[1] == 168) continue;
+            if (b[0] == 198 && b[1] >= 18 && b[1] <= 19) continue;
 
-                if (b[0] == 198 && b[1] >= 18 && b[1] <= 19) continue;
+            if (b[0] == 198 && b[1] == 51 && b[2] == 100) continue;
 
-                if (b[0] == 198 && b[1] == 51 && b[2] == 100) continue;
+            if (b[0] == 203 && b[1] == 0 && b[2] == 113) continue;
 
-                if (b[0] == 203 && b[1] == 0 && b[2] == 113) continue;
+            if (b[0] >= 224 && b[0] <= 239) continue;
 
-                if (b[0] >= 224 && b[0] <= 239) continue;
+            if (b[0] == 233 && b[1] == 252 && b[2] == 0) continue;
 
-                if (b[0] == 233 && b[1] == 252 && b[2] == 0) continue;
-
-                break;
-            }
-
-            return new IPAddress(b);
+            break;
         }
+
+        return new IPAddress(b);
     }
 
     private static async Task ConnectAsync(IPAddress address)
